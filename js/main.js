@@ -29,20 +29,22 @@ function renderCourse(courses) {
 function handleCreateForm() {
   var createBtn = document.querySelector('#create')
   createBtn.onclick = (e) => {
-    var nameInput = document.querySelector('input[name="name"]').value
+    var nameInput = validateName(document.querySelector('input[name="name"]').value)
     var jobInput = document.querySelector('input[name="job"]').value
-    var formData = {
-      id: newId,
-      name: nameInput,
-      job: jobInput,
+    if (nameInput === false) {
+      return 0
+    } else {
+      var formData = {
+        "id": newId,
+        "name": nameInput,
+        "job": jobInput,
+      }
+      usersAPI.push(formData)
+      createCourse(formData, function (elm) {
+        renderCourse(usersAPI)
+      })
+      clearInput()
     }
-    usersAPI.push(formData)
-
-    createCourse(formData, function (elm) {
-      renderCourse(usersAPI)
-    })
-    clearInput()
-    e.stopPropagation()
   }
 }
 
@@ -108,6 +110,14 @@ function clearInput() {
   document.querySelector('input[name="nameEdit"]').value = ''
 }
 
+var validateName = (name) => {
+  if (!name || !name.trim() || name.trim().length < 3) {
+    alert("Invalid Name")
+    return false;
+  }
+  return name;
+}
+
 window.handleEditCourse = function handleEditCourse(x) {
   var aUser = usersAPI.find(e => {
     return parseInt(e.id, 10) === x
@@ -122,24 +132,27 @@ window.handleEditCourse = function handleEditCourse(x) {
   var btnSave = document.querySelector('#save')
 
   btnSave.onclick = (e) => {
-    var newName = document.querySelector('input[name="nameEdit"]').value
+    var newName = validateName(document.querySelector('input[name="nameEdit"]').value)
     var newJob = document.querySelector('input[name="jobEdit"]').value
-    var formData = {
-      name: newName,
-      job: newJob
-    }
-
-    usersAPI.forEach(e => {
-      if (parseInt(e.id, 10) === x) {
-        e.name = newName
-        e.job = newJob
+    if (newName === false) {
+      closeModal()
+    } else {
+      var formData = {
+        name: newName,
+        job: newJob
       }
-    })
-
-    editCourse(x, formData, renderCourse(usersAPI))
-    clearInput()
-    e.stopPropagation()
-    closeModal()
+      usersAPI.forEach(e => {
+        if (parseInt(e.id, 10) === x) {
+          e.name = newName
+          e.job = newJob
+        }
+      })
+      editCourse(x, formData, renderCourse(usersAPI))
+      clearInput()
+      e.stopPropagation()
+      closeModal()
+    }
+    console.log(newName)
   }
   showModal()
 }
@@ -162,15 +175,12 @@ window.onload = () => {
     modal.style.display = 'block'
   }
   window.closeModal = function closeModal() {
-
-    window.onclick = function (event) {
-      if (event.target == modal) {
-        modal.style.display = "none";
-      }
-    }
-
     modal.style.display = "none";
-
+  }
+  window.onclick = function (event) {
+    if (event.target === modal) {
+      modal.style.display = "none";
+    }
   }
 
   function start() {
