@@ -1,34 +1,5 @@
 import 'regenerator-runtime/runtime'
 
-/*
-import axios from "axios";
-
-axios.get('https://5fb3f39db6601200168f817f.mockapi.io/users/')
-  .then(function (response) {
-    var obj = response.data.items
-    users = obj
-    return obj
-  })
-  .catch(function (error) {
-    // handle error
-    console.log(error);
-  })
-  .then(function () {
-    // always executed
-  });
-
-var api = 'https://5fb3f39db6601200168f817f.mockapi.io/users/'
-var users = [];
-
-window.onload = () => {
-  setTimeout(() => {
-    users.forEach(e => {
-      console.log(e)
-    })
-  }, 2000)
-}
-*/
-
 var courseAPI = 'https://603713ec54350400177218c0.mockapi.io/users'
 var usersAPI = []
 var newId = 0;
@@ -57,7 +28,7 @@ function renderCourse(courses) {
 
 function handleCreateForm() {
   var createBtn = document.querySelector('#create')
-  createBtn.onclick = () => {
+  createBtn.onclick = (e) => {
     var nameInput = document.querySelector('input[name="name"]').value
     var jobInput = document.querySelector('input[name="job"]').value
     var formData = {
@@ -71,6 +42,7 @@ function handleCreateForm() {
       renderCourse(usersAPI)
     })
     clearInput()
+    e.stopPropagation()
   }
 }
 
@@ -129,6 +101,12 @@ function editCourse(id, data, callback) {
     .then(callback)
 }
 
+function clearInput() {
+  document.querySelector('input[name="name"]').value = ''
+  document.querySelector('input[name="job"]').value = ''
+  document.querySelector('input[name="jobEdit"]').value = ''
+  document.querySelector('input[name="nameEdit"]').value = ''
+}
 
 window.handleEditCourse = function handleEditCourse(x) {
   var aUser = usersAPI.find(e => {
@@ -137,35 +115,34 @@ window.handleEditCourse = function handleEditCourse(x) {
 
   var editBtn = document.querySelector(`button[onclick='handleEditCourse(${x})']`)
 
-  document.querySelector('input[name="name"]').value = aUser.name
+  document.querySelector('input[name="nameEdit"]').value = aUser.name
 
-  document.querySelector('input[name="job"]').value = aUser.job
+  document.querySelector('input[name="jobEdit"]').value = aUser.job
 
   var btnSave = document.querySelector('#save')
 
-  btnSave.onclick = () => {
-    var newName = document.querySelector('input[name="name"]').value
-    var newJob = document.querySelector('input[name="job"]').value
+  btnSave.onclick = (e) => {
+    var newName = document.querySelector('input[name="nameEdit"]').value
+    var newJob = document.querySelector('input[name="jobEdit"]').value
     var formData = {
       name: newName,
       job: newJob
     }
+
     usersAPI.forEach(e => {
       if (parseInt(e.id, 10) === x) {
         e.name = newName
         e.job = newJob
       }
     })
+
     editCourse(x, formData, renderCourse(usersAPI))
     clearInput()
+    e.stopPropagation()
+    closeModal()
   }
+  showModal()
 }
-
-function clearInput() {
-  document.querySelector('input[name="name"]').value = ''
-  document.querySelector('input[name="job"]').value = ''
-}
-
 
 window.handleDeleteCourse = function handleDeleteCourse(idFilter) {
   var filtedArr = usersAPI.filter(e => {
@@ -173,11 +150,28 @@ window.handleDeleteCourse = function handleDeleteCourse(idFilter) {
   })
   usersAPI = filtedArr
   deleteCourse(idFilter, () => {
-    renderCourse(filtedArr)
+    renderCourse(usersAPI)
   })
 }
 
 window.onload = () => {
+
+  var modal = (document.querySelector('#myModal'))
+
+  window.showModal = function showModal() {
+    modal.style.display = 'block'
+  }
+  window.closeModal = function closeModal() {
+
+    window.onclick = function (event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    }
+
+    modal.style.display = "none";
+
+  }
 
   function start() {
 
@@ -192,6 +186,7 @@ window.onload = () => {
   }
 
   start()
+
   setTimeout(() => {
     console.log(usersAPI)
   }, 2000)
