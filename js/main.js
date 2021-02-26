@@ -46,7 +46,8 @@ function renderCourse(courses) {
     <p>id : ${course.id}</p>
     <h2>Name : ${course.name}</h2>
     <h3>Job : ${course.job}</h3>
-    <button onclick="handleDeleteCourse(${course.id})">Xoa</button>
+    <button onclick="handleDeleteCourse(${course.id})">DELETE</button>
+    <button onclick="handleEditCourse(${course.id})">EDIT</button>
     </li>
   `
     })
@@ -57,19 +58,19 @@ function renderCourse(courses) {
 function handleCreateForm() {
   var createBtn = document.querySelector('#create')
   createBtn.onclick = () => {
-    var name = document.querySelector('input[name="name"]').value
-    var job = document.querySelector('input[name="job"]').value
-
+    var nameInput = document.querySelector('input[name="name"]').value
+    var jobInput = document.querySelector('input[name="job"]').value
     var formData = {
-      id: `${newId}`,
-      name: name,
-      job: job,
+      id: newId,
+      name: nameInput,
+      job: jobInput,
     }
     usersAPI.push(formData)
 
     createCourse(formData, function (elm) {
       renderCourse(usersAPI)
     })
+    clearInput()
   }
 }
 
@@ -97,7 +98,7 @@ function createCourse(data, callback) {
     .then(callback)
 }
 
-function deleteCourse(id, callback) {
+function deleteCourse(id, callback,) {
   var option = {
     method: 'DELETE',
     headers: {
@@ -111,6 +112,60 @@ function deleteCourse(id, callback) {
     })
     .then(callback)
 }
+
+function editCourse(id, data, callback) {
+  var option = {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  }
+
+  fetch(courseAPI + '/' + id, option)
+    .then((response) => {
+      response.json();
+    })
+    .then(callback)
+}
+
+
+window.handleEditCourse = function handleEditCourse(x) {
+  var aUser = usersAPI.find(e => {
+    return parseInt(e.id, 10) === x
+  })
+
+  var editBtn = document.querySelector(`button[onclick='handleEditCourse(${x})']`)
+
+  document.querySelector('input[name="name"]').value = aUser.name
+
+  document.querySelector('input[name="job"]').value = aUser.job
+
+  var btnSave = document.querySelector('#save')
+
+  btnSave.onclick = () => {
+    var newName = document.querySelector('input[name="name"]').value
+    var newJob = document.querySelector('input[name="job"]').value
+    var formData = {
+      name: newName,
+      job: newJob
+    }
+    usersAPI.forEach(e => {
+      if (parseInt(e.id, 10) === x) {
+        e.name = newName
+        e.job = newJob
+      }
+    })
+    editCourse(x, formData, renderCourse(usersAPI))
+    clearInput()
+  }
+}
+
+function clearInput() {
+  document.querySelector('input[name="name"]').value = ''
+  document.querySelector('input[name="job"]').value = ''
+}
+
 
 window.handleDeleteCourse = function handleDeleteCourse(idFilter) {
   var filtedArr = usersAPI.filter(e => {
